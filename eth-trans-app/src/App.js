@@ -7,9 +7,7 @@ function App() {
   const [date, setDate] = useState(Date.now());
   const [address, setAddress] = useState(0x0);
 
-  const response = [{
-
-  }]
+  const responses = []
 
   function queryChain(e) {
     e.preventDefault();
@@ -68,15 +66,25 @@ function App() {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>0x13ea5D25</td>
-              <td>0x13ea...5D25</td>
-              <td>0x13ea...5D25</td>
-              <td>0x13ea5D25</td>
-              <td>0x13ea5D25</td>
-              <td>0x13ea5D25</td>
-              <td>257 days ago</td>
-            </tr>
+            {
+              responses.length > 0 ?
+                responses.map((response, id) =>
+                  <tr key={id}>
+                    <td>{response.hash}</td>
+                    <td>{response.to}</td>
+                    <td>{response.from}</td>
+                    <td>{response.value}</td>
+                    <td>{response.nonce}</td>
+                    <td>{response.data}</td>
+                    <td>{response.date}</td>
+                  </tr>
+                )
+                :
+                <tr>
+                  <td colSpan="7">No transaction for current selection</td>
+                </tr>
+            }
+
           </tbody>
         </table>
       </div>
