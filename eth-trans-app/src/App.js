@@ -6,8 +6,7 @@ function App() {
   const [to, setTo] = useState(0x0);
   const [date, setDate] = useState(Date.now());
   const [address, setAddress] = useState(0x0);
-
-  const responses = []
+  const [responses,] = useState([]);
 
   function queryChain(e) {
     e.preventDefault();
@@ -52,8 +51,8 @@ function App() {
         </form>
       </div>
 
-      <div>
-        <table>
+      <div className="resultBody">
+        <table className="tableBody">
           <thead>
             <tr>
               <th>TX Hash</th>
