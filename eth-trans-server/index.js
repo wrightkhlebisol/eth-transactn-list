@@ -1,5 +1,7 @@
 const { ethers } = require("ethers");
 const express = require('express');
+require('dotenv').config()
+
 
 const app = express();
 const port = 3020
@@ -7,10 +9,10 @@ const network = "rinkeby"
 
 const provider = new ethers.getDefaultProvider(
     network, {
-    infura: '4fc321310eee40b1b9c1310aaf30f40f',
-    alchemy: '1d_mknGG0lVXylQ1kBQq3wW9ERUkl8ef',
-    etherscan: 'HT6UZMHG65VX3S3Q8NBFGMDNK2TBVHS8FR',
-    pocket: '786541ca50ed286bcb3f0d3524cab29f'
+    infura: process.env.INFURA_KEY,
+    alchemy: process.env.ALCHEMY_KEY,
+    etherscan: process.env.ETHERSCAN_KEY,
+    pocket: process.env.POCKET_KEY
 });
 
 // parse request bodies (req.body)
