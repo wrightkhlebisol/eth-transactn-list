@@ -1,15 +1,29 @@
 import './App.css';
 import { useState } from 'react';
 
+const server_url = "http://127.0.0.1:3020";
 function App() {
   const [from, setFrom] = useState(0x0);
   const [to, setTo] = useState(0x0);
   const [date, setDate] = useState(Date.now());
   const [address, setAddress] = useState(0x0);
-  const [responses,] = useState([]);
+  const [responses, setResponses] = useState([]);
+
+  // useEffect(() => {
+  //   effect
+  //   return () => {
+  //     cleanup
+  //   }
+  // }, [input])
 
   function queryChain(e) {
     e.preventDefault();
+    fetch(`${server_url}/block/${from}/transactions/${address}`).then((res) => res.json()).then(res => {
+      console.log(res)
+      setResponses(res);
+
+    }).catch();
+
     console.log(from, to, date, address)
   }
 
