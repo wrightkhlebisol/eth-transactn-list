@@ -46,3 +46,16 @@
 .tableBody {
   width: 100%;
 }
+
+tr {
+  height: 36px;
+  border: 2px solid black;
+}
+
+table {
+  text-align: left;
+}
+
+.noContent {
+  text-align: center;
+}
