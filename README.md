@@ -12,7 +12,7 @@ Eth-trans-app is the frontend application that displays the transaction and comm
 On your terminal, ```cd``` into eth-trans-app and do the following
 1. Install the dependencies using ```yarn install```
 2. Update ```.env``` with appropriate values
-2. Start the server by running ```yarn start```
+2. Start the server by running ```yarn serve```
 3. The application will be available on port ```3020```
 
 
