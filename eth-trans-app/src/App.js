@@ -4,7 +4,6 @@ import { useState } from 'react';
 const server_url = "http://127.0.0.1:3020";
 function App() {
   const [from, setFrom] = useState(0x0);
-  const [to, setTo] = useState(0x0);
   const [date, setDate] = useState(Date.now());
   const [address, setAddress] = useState(0x0);
   const [responses, setResponses] = useState([]);
@@ -18,25 +17,21 @@ function App() {
 
   function queryChain(e) {
     e.preventDefault();
-    fetch(`${server_url}/block/${from}/transactions/${address}`).then((res) => res.json()).then(res => {
-      console.log(res)
-      setResponses(res);
+    fetch(`${server_url}/block/${from}/transactions/${address}`)
+      .then(res => res.json())
+      .then(res => {
+        console.log(res.body)
+        setResponses(res.body.response);
 
-    }).catch();
+      }).catch(e => console.error(e));
 
-    console.log(from, to, date, address)
+    console.log(from, date, address)
   }
 
   function handleSetFrom(e) {
     console.log(e.target.value)
     let from = e.target.value;
     setFrom(from);
-  }
-
-  function handleSetTo(e) {
-    console.log(e.target.value)
-    let to = e.target.value;
-    setTo(to);
   }
 
   function handleSetAddress(e) {
@@ -58,7 +53,6 @@ function App() {
       <div>
         <form onSubmit={queryChain}>
           <input type="number" min="0" placeholder="Block Number (from)" required onChange={handleSetFrom} />
-          <input type="number" min="0" placeholder="Block Number (to)" onChange={handleSetTo} />
           <input type="text" placeholder="Address" required onChange={handleSetAddress} />
           <input type="date" placeholder="date of transaction" onChange={handleSetDate} />
           <button type="submit">Submit</button>
@@ -69,13 +63,16 @@ function App() {
         <table className="tableBody">
           <thead>
             <tr>
-              <th>TX Hash</th>
-              <th>TX To</th>
-              <th>TX From</th>
-              <th>TX Value(wei)</th>
-              <th>TX Nonce</th>
-              <th>TX Data(if any)</th>
-              <th>TX Date</th>
+              <th>Hash</th>
+              <th>To</th>
+              <th>From</th>
+              <th>gasLimit(wei)</th>
+              <th>gasPrice(wei)</th>
+              <th>Txn Fee(ether)</th>
+              <th>Value(wei)</th>
+              <th>Nonce</th>
+              <th>Data(if any)</th>
+              <th>Date</th>
             </tr>
           </thead>
           <tbody>
@@ -83,18 +80,21 @@ function App() {
               responses.length > 0 ?
                 responses.map((response, id) =>
                   <tr key={id}>
-                    <td>{response.hash}</td>
-                    <td>{response.to}</td>
-                    <td>{response.from}</td>
-                    <td>{response.value}</td>
+                    <td>{`${response.hash.substr(0, 12)}...`}</td>
+                    <td>{`${response.to.substr(0, 12)}...`}</td>
+                    <td>{`${response.from.substr(0, 12)}...`}</td>
+                    <td>{parseInt(response.gasLimit.hex)}</td>
+                    <td>{parseInt(response.gasPrice.hex)}</td>
+                    <td>{(parseInt(response.gasLimit.hex) * parseInt(response.gasPrice.hex) / 10 ** 18).toFixed(7)}</td>
+                    <td>{parseInt(response.value.hex)}</td>
                     <td>{response.nonce}</td>
-                    <td>{response.data}</td>
-                    <td>{response.date}</td>
+                    <td>{`${response.data.substr(0, 12)}...`}</td>
+                    <td>{responses.timestamp}</td>
                   </tr>
                 )
                 :
-                <tr>
-                  <td colSpan="7">No transaction for current selection</td>
+                <tr className="noContent">
+                  <td colSpan="10">No transaction for current selection</td>
                 </tr>
             }
 
