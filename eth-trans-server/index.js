@@ -19,7 +19,7 @@ const provider = new ethers.getDefaultProvider(
 });
 
 // Logging requests
-app.use(morgan('combined'));
+app.use(morgan('tiny'));
 
 // Allow cors request
 app.use(cors());
@@ -67,14 +67,15 @@ app.get('/block/:blockNumber/transactions/:address', async (req, res) => {
                 message: 'block transactions request failed'
             });
         }
-        let { transactions } = blocktransactions;
 
+        let { transactions, timestamp, miner } = blocktransactions;
 
-        const from = transactions.filter(transaction => transaction.from === address
+        // Filter by from and to address
+        const response = transactions.filter(transaction => transaction.from === address
             || transaction.to === address
         );
 
-        if (from.length <= 0) {
+        if (response.length <= 0) {
             return res.status(200).json({
                 status: 'success',
                 message: `No transactions for address ${address} in block ${blockNumber}`,
@@ -85,7 +86,7 @@ app.get('/block/:blockNumber/transactions/:address', async (req, res) => {
         res.status(200).json({
             status: 'success',
             message: 'block transactions request successful',
-            body: from
+            body: { response, miner, timestamp }
         })
     } catch (error) {
         console.error(error);
@@ -95,7 +96,6 @@ app.get('/block/:blockNumber/transactions/:address', async (req, res) => {
             error: error.message
         })
     }
-
 })
 
 app.listen(port, () => {
