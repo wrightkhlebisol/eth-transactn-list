@@ -23,7 +23,8 @@ function App() {
         setResponses(res.body.blocktransactions);
         setStatusMessage(res.message);
         setCurrentBalance(res.body.balanceInETH);
-        setCurrentBlockNumber(res.body.currentBlockNumber)
+        setCurrentBlockNumber(res.body.currentBlockNumber);
+        setBalanceOnDate(0);
       }).catch(e => console.error(e));
 
   }
@@ -103,9 +104,9 @@ function App() {
                 responses.length > 0 ?
                 responses.map((response, id) =>
                   <tr key={id}>
-                    <td>{`${response.hash.substr(0, 6)}...`}</td>
-                    <td>{`${response.from.substr(0, 6)}...`}</td>
-                    <td>{`${response.to.substr(0, 6)}...`}</td>
+                    <td>{response.hash ? `${response.hash.substr(0, 6)}...` : 'null'}</td>
+                    <td>{response.from ? `${response.from.substr(0, 6)}...` : 'null'}</td>
+                    <td>{response.to ? `${response.to.substr(0, 6)}...` : 'null'}</td>
                     <td>{parseInt(response.gasLimit.hex)}</td>
                     <td>{parseInt(response.gasPrice.hex)}</td>
                     <td>{(parseInt(response.gasLimit.hex) * parseInt(response.gasPrice.hex) / 10 ** 18).toFixed(7)}</td>

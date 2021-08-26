@@ -72,23 +72,12 @@ app.get('/block/:blockNumber/transactions/:address/network/:network', async (req
             });
         }
 
-        // Filter by from and to address
-
         if (blocktransactions.length <= 0) {
             return res.status(200).json({
                 status: 'success',
                 message: `No transactions for address ${address} in block ${blockNumber}`,
                 body: []
             })
-        }
-
-        if (blocktransactions[0].hash) {
-            // let reponseAsArrayLength = blocktransactions.length;
-
-            // while (bloctransactions.length) {
-
-            // }
-            console.log(blocktransactions)
         }
 
         res.status(200).json({
