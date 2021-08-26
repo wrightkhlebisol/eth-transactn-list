@@ -7,7 +7,8 @@ function App() {
   const [date, setDate] = useState(Date.now());
   const [address, setAddress] = useState(0x0);
   const [network, setNetwork] = useState('homestead');
-  const [currentBalance, setCurrentBalance] = useState(0)
+  const [currentBalance, setCurrentBalance] = useState(0);
+  const [currentBlockNumber, setCurrentBlockNumber] = useState(0);
   const [balanceOnDate, setBalanceOnDate] = useState(0)
   const [responses, setResponses] = useState([]);
   const [statusMessage, setStatusMessage] = useState('No transaction for current selection');
@@ -22,6 +23,7 @@ function App() {
         setResponses(res.body.blocktransactions);
         setStatusMessage(res.message);
         setCurrentBalance(res.body.balanceInETH);
+        setCurrentBlockNumber(res.body.currentBlockNumber)
       }).catch(e => console.error(e));
 
   }
@@ -38,7 +40,6 @@ function App() {
 
   function handleSetDate(e) {
     let date = e.target.value;
-    console.log(date)
     setDate(date);
   }
 
@@ -55,8 +56,8 @@ function App() {
         <form onSubmit={queryChain}>
           <input type="number" min="0" placeholder="Block Number (from)" required onChange={handleSetFromBlock} />
           <input type="text" placeholder="Address" required onChange={handleSetAddress} />
-          <input type="date" placeholder="date of transaction" onChange={handleSetDate} />
-          <select onChange={handleSetNetwork}>
+          <input type="datetime-local" placeholder="date of transaction" onChange={handleSetDate} />
+          <select onChange={handleSetNetwork} required>
             <option value="homestead">Homestead(mainnet)</option>
             <option value="rinkeby">Rinkeby(testnet)</option>
             <option value="ropsten">Ropsten(testnet)</option>
@@ -70,6 +71,8 @@ function App() {
         <h5>
           Network:
             <span className="infoSection">{network === 'homestead' ? 'mainnet' : network}</span> |
+          Current Block Number:
+            <span className="infoSection">{currentBlockNumber}</span> |
           Current Balance(eth):
             <span className="infoSection">{currentBalance && currentBalance.toFixed(2)}</span> |
           Balance on ({new Date(date).toGMTString()}):

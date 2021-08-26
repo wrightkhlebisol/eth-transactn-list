@@ -59,10 +59,10 @@ app.get('/block/:blockNumber/transactions/:address/network/:network', async (req
 
         const etherscanProvider = new ethers.providers.EtherscanProvider(network, process.env.ETHERSCAN_KEY);
 
-        // let currentBlockNumber = await provider.getBlockNumber();
+        let balance = await provider.getBalance(address);
+        let balanceInETH = balance.toString() / 10 ** 18;
 
-
-
+        let currentBlockNumber = await provider.getBlockNumber();
         let blocktransactions = await etherscanProvider.getHistory(address, parseInt(blockNumber));
 
         if (!blocktransactions) {
@@ -82,10 +82,19 @@ app.get('/block/:blockNumber/transactions/:address/network/:network', async (req
             })
         }
 
+        if (blocktransactions[0].hash) {
+            // let reponseAsArrayLength = blocktransactions.length;
+
+            // while (bloctransactions.length) {
+
+            // }
+            console.log(blocktransactions)
+        }
+
         res.status(200).json({
             status: 'success',
             message: 'block transactions request successful',
-            body: blocktransactions
+            body: { blocktransactions, balanceInETH, currentBlockNumber }
         })
     } catch (error) {
         console.error(error);
