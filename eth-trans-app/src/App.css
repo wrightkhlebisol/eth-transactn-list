@@ -59,3 +59,7 @@ table {
 .noContent {
   text-align: center;
 }
+
+.network {
+  text-transform: capitalize;
+}
