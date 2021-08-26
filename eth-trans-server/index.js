@@ -63,7 +63,7 @@ app.get('/block/:blockNumber/transactions/:address/network/:network', async (req
 
 
 
-        let blocktransactions = await etherscanProvider.getHistory(address);
+        let blocktransactions = await etherscanProvider.getHistory(address, parseInt(blockNumber));
 
         if (!blocktransactions) {
             return res.status(200).json({
@@ -72,12 +72,7 @@ app.get('/block/:blockNumber/transactions/:address/network/:network', async (req
             });
         }
 
-
         // Filter by from and to address
-        // const response = blocktransactions.filter(blocktransaction => blocktransaction.from === address
-        //     || blocktransaction.to === address
-        // );
-        console.log(blocktransactions)
 
         if (blocktransactions.length <= 0) {
             return res.status(200).json({
