@@ -15,7 +15,7 @@ function App() {
 
   async function queryChain(e) {
     e.preventDefault();
-    setStatusMessage('...retrieving transactions');
+    setStatusMessage('...retrieving transactions, might take a while');
     setResponses([]);
     let url;
     if (date && date !== 0) {
