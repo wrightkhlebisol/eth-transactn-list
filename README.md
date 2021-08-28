@@ -25,3 +25,26 @@ On your terminal, ```cd``` into eth-trans-app and do the following
 3. The application should be running on the assigned port which should be ```3000``` or any other available ports
 4. Enter the **block number** and **address** you're querying for on the application
 
+
+## FEATURES
+
+* Get all transaction records for an address since the genesis block or from a given block number
+* Get current balance for an address
+* Get amounts of ETH associated with transactions made to and from the given address
+
+#### EXTRA FEATURES
+* Get current balance of an address
+* Get historical balance for an address at a given timestamp
+* Supports Mainnet and Testnet
+
+
+------------------
+## APP SCREENSHOT
+
+### Query without timestamp showing responses 
+![Query without timestamp](no_date_query.png)
+
+-----------------
+
+### Query with timestamp showing responses 
+![Historical balance Query with timestamp](dated_query.png)
