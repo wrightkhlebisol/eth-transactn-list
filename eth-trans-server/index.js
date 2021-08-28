@@ -45,12 +45,10 @@ app.get('/latestblock', async (req, res) => {
     }
 })
 
-async function getHistoricBalance(address, historicTimestamp, provider) {
+async function getHistoricBlockByTimestamp(historicTimestamp, provider) {
 
     let lowerBound = 0;
     let upperBound = await provider.getBlockNumber();
-
-    const newHistoricTimestamp = new Date(historicTimestamp).getTime();
 
     // Binary Search
     // Midpoint = Left + (right - left)/2
@@ -62,14 +60,13 @@ async function getHistoricBalance(address, historicTimestamp, provider) {
         let blockDetails = await provider.getBlock(midPoint);
 
         // Compare timestamp from block with given timestamp
-        if (blockDetails.timestamp === newHistoricTimestamp) {
+        if (blockDetails.timestamp === historicTimestamp) {
             continue;
-        } else if (blockDetails.timestamp > newHistoricTimestamp) {
+        } else if (blockDetails.timestamp > historicTimestamp) {
             upperBound = midPoint - 1;
         } else {
             lowerBound = midPoint + 1;
         }
-
     }
 
     return midPoint;
@@ -95,10 +92,13 @@ app.get('/block/:blockNumber/transactions/:address/network/:network', async (req
         let currentBlockNumber = await provider.getBlockNumber();
         let balanceAtTimestamp = 0;
         if (req.query.timestamp) {
-            let historicTimestamp = req.query.timestamp;
-            blockAtTimestamp = await getHistoricBalance(address, historicTimestamp, provider);
-            console.log({ balanceAtTimestamp });
-            let historicBalance = await provider.getBalance(address, midPoint);
+            let historicQueryTimestamp = req.query.timestamp;
+
+            let blockAtTimestamp = await getHistoricBlockByTimestamp(historicQueryTimestamp, provider);
+            let oldBlock = await provider.getBlock(blockAtTimestamp);
+
+            let balanceAtTimestampBigNumber = await provider.getBalance(address, blockAtTimestamp);
+            balanceAtTimestamp = balanceAtTimestampBigNumber.toString() / 10 ** 18;
         }
 
 
