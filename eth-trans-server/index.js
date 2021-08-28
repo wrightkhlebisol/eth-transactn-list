@@ -10,13 +10,7 @@ const app = express();
 const port = process.env.PORT || 3020
 const network = "rinkeby"
 
-const provider = new ethers.getDefaultProvider(
-    network, {
-    infura: process.env.INFURA_KEY,
-    alchemy: process.env.ALCHEMY_KEY,
-    etherscan: process.env.ETHERSCAN_KEY,
-    pocket: process.env.POCKET_KEY
-});
+
 
 // Logging requests
 app.use(morgan('tiny'));
@@ -51,15 +45,68 @@ app.get('/latestblock', async (req, res) => {
     }
 })
 
+async function getHistoricBlockByTimestamp(historicTimestamp, provider) {
+
+    let lowerBound = 0;
+    let upperBound = await provider.getBlockNumber();
+
+    // Binary Search
+    // Midpoint = Left + (right - left)/2
+    let midPoint = 0;
+
+    while (lowerBound <= upperBound) {
+        midPoint = Math.floor(lowerBound + ((upperBound - lowerBound) / 2));
+        // Get the block details using midPoint
+        let blockDetails = await provider.getBlock(midPoint);
+
+        // Compare timestamp from block with given timestamp
+        if (blockDetails.timestamp === historicTimestamp) {
+            continue;
+        } else if (blockDetails.timestamp > historicTimestamp) {
+            upperBound = midPoint - 1;
+        } else {
+            lowerBound = midPoint + 1;
+        }
+    }
+
+    return midPoint;
+
+}
+
 // GET BLOCK TRANSACTIONS BY BLOCK NUMBER and ADDRESS
-app.get('/block/:blockNumber/transactions/:address', async (req, res) => {
+app.get('/block/:blockNumber/transactions/:address/network/:network', async (req, res) => {
+
+    let { blockNumber, address, network } = req.params;
+
+    const provider = new ethers.getDefaultProvider(
+        network, {
+        infura: process.env.INFURA_KEY,
+        alchemy: process.env.ALCHEMY_KEY,
+        etherscan: process.env.ETHERSCAN_KEY,
+        pocket: process.env.POCKET_KEY
+    });
+
+    const etherscanProvider = new ethers.providers.EtherscanProvider(network, process.env.ETHERSCAN_KEY);
+
     try {
+        let currentBlockNumber = await provider.getBlockNumber();
+        let balanceAtTimestamp = 0;
+        if (req.query.timestamp) {
+            let historicQueryTimestamp = req.query.timestamp;
 
-        let { blockNumber, address } = req.params;
+            let blockAtTimestamp = await getHistoricBlockByTimestamp(historicQueryTimestamp, provider);
+            let oldBlock = await provider.getBlock(blockAtTimestamp);
 
-        // let currentBlockNumber = await provider.getBlockNumber();
+            let balanceAtTimestampBigNumber = await provider.getBalance(address, blockAtTimestamp);
+            balanceAtTimestamp = balanceAtTimestampBigNumber.toString() / 10 ** 18;
+        }
 
-        let blocktransactions = await provider.getBlockWithTransactions(parseInt(blockNumber));
+
+
+        let balance = await provider.getBalance(address);
+        let balanceInETH = balance.toString() / 10 ** 18;
+
+        let blocktransactions = await etherscanProvider.getHistory(address, parseInt(blockNumber));
 
         if (!blocktransactions) {
             return res.status(200).json({
@@ -68,14 +115,7 @@ app.get('/block/:blockNumber/transactions/:address', async (req, res) => {
             });
         }
 
-        let { transactions, timestamp, miner } = blocktransactions;
-
-        // Filter by from and to address
-        const response = transactions.filter(transaction => transaction.from === address
-            || transaction.to === address
-        );
-
-        if (response.length <= 0) {
+        if (blocktransactions.length <= 0) {
             return res.status(200).json({
                 status: 'success',
                 message: `No transactions for address ${address} in block ${blockNumber}`,
@@ -86,7 +126,7 @@ app.get('/block/:blockNumber/transactions/:address', async (req, res) => {
         res.status(200).json({
             status: 'success',
             message: 'block transactions request successful',
-            body: { response, miner, timestamp }
+            body: { blocktransactions, balanceInETH, currentBlockNumber, balanceAtTimestamp }
         })
     } catch (error) {
         console.error(error);
@@ -98,6 +138,8 @@ app.get('/block/:blockNumber/transactions/:address', async (req, res) => {
     }
 })
 
-app.listen(port, () => {
+
+
+app.listen(port, async () => {
     console.log(`ETH TX Crawler listening at http://localhost:${port}`)
 })

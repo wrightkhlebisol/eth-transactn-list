@@ -38,7 +38,7 @@
 }
 
 .resultBody {
-  width: 60%;
+  width: 1200px;
   margin: auto;
   margin-top: 30px;
 }
@@ -58,4 +58,8 @@ table {
 
 .noContent {
   text-align: center;
+}
+
+.infoSection {
+  text-transform: capitalize;
 }
