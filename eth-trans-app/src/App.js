@@ -16,6 +16,7 @@ function App() {
   async function queryChain(e) {
     e.preventDefault();
     setStatusMessage('...retrieving transactions');
+    setResponses([]);
     let url;
     if (date && date !== 0) {
       let parsedDate = new Date(date).getTime() / 1000;
@@ -25,6 +26,7 @@ function App() {
     }
 
     try {
+
       let result = await fetch(url);
 
       let res = await result.json();
@@ -33,7 +35,7 @@ function App() {
       setStatusMessage(res.message);
       setCurrentBalance(res.body.balanceInETH);
       setCurrentBlockNumber(res.body.currentBlockNumber);
-      setBalanceOnDate(0);
+      setBalanceOnDate(res.body.balanceAtTimestamp);
     } catch (err) {
       console.log(err)
     }
