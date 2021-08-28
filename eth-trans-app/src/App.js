@@ -4,7 +4,7 @@ import { useState } from 'react';
 const server_url = "http://127.0.0.1:3020";
 function App() {
   const [from, setFromBlock] = useState(0x0);
-  const [date, setDate] = useState(Date.now());
+  const [date, setDate] = useState(0);
   const [address, setAddress] = useState(0x0);
   const [network, setNetwork] = useState('homestead');
   const [currentBalance, setCurrentBalance] = useState(0);
@@ -13,19 +13,30 @@ function App() {
   const [responses, setResponses] = useState([]);
   const [statusMessage, setStatusMessage] = useState('No transaction for current selection');
 
-  function queryChain(e) {
+  async function queryChain(e) {
     e.preventDefault();
     setStatusMessage('...retrieving transactions');
-    fetch(`${server_url}/block/${from}/transactions/${address}/network/${network}`)
-      .then(res => res.json())
-      .then(res => {
-        console.log(res.body)
-        setResponses(res.body.blocktransactions);
-        setStatusMessage(res.message);
-        setCurrentBalance(res.body.balanceInETH);
-        setCurrentBlockNumber(res.body.currentBlockNumber);
-        setBalanceOnDate(0);
-      }).catch(e => console.error(e));
+    let url;
+    if (date && date !== 0) {
+      let parsedDate = new Date(date).getTime() / 1000;
+      url = `${server_url}/block/${from}/transactions/${address}/network/${network}/?timestamp=${parsedDate}`
+    } else {
+      url = `${server_url}/block/${from}/transactions/${address}/network/${network}`
+    }
+
+    try {
+      let result = await fetch(url);
+
+      let res = await result.json();
+
+      setResponses(res.body.blocktransactions);
+      setStatusMessage(res.message);
+      setCurrentBalance(res.body.balanceInETH);
+      setCurrentBlockNumber(res.body.currentBlockNumber);
+      setBalanceOnDate(0);
+    } catch (err) {
+      console.log(err)
+    }
 
   }
 
@@ -75,9 +86,9 @@ function App() {
           Current Block Number:
             <span className="infoSection">{currentBlockNumber}</span> |
           Current Balance(eth):
-            <span className="infoSection">{currentBalance && currentBalance.toFixed(2)}</span> |
-          Balance on ({new Date(date).toGMTString()}):
-            <span className="infoSection">{balanceOnDate && balanceOnDate.toFixed(2)}</span>
+            <span className="infoSection">{currentBalance && currentBalance.toFixed(3)}</span> |
+          Balance on {date !== 0 ? new Date(date).toGMTString() : 'No date selected'}:
+            <span className="infoSection">{balanceOnDate && balanceOnDate.toFixed(3)}</span>
         </h5>
       </div>
 
