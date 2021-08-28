@@ -10,13 +10,7 @@ const app = express();
 const port = process.env.PORT || 3020
 const network = "rinkeby"
 
-const provider = new ethers.getDefaultProvider(
-    network, {
-    infura: process.env.INFURA_KEY,
-    alchemy: process.env.ALCHEMY_KEY,
-    etherscan: process.env.ETHERSCAN_KEY,
-    pocket: process.env.POCKET_KEY
-});
+
 
 // Logging requests
 app.use(morgan('tiny'));
@@ -51,18 +45,67 @@ app.get('/latestblock', async (req, res) => {
     }
 })
 
+async function getHistoricBalance(address, historicTimestamp, provider) {
+
+    let lowerBound = 0;
+    let upperBound = await provider.getBlockNumber();
+
+    const newHistoricTimestamp = new Date(historicTimestamp).getTime();
+
+    // Binary Search
+    // Midpoint = Left + (right - left)/2
+    let midPoint = 0;
+
+    while (lowerBound <= upperBound) {
+        midPoint = Math.floor(lowerBound + ((upperBound - lowerBound) / 2));
+        // Get the block details using midPoint
+        let blockDetails = await provider.getBlock(midPoint);
+
+        // Compare timestamp from block with given timestamp
+        if (blockDetails.timestamp === newHistoricTimestamp) {
+            continue;
+        } else if (blockDetails.timestamp > newHistoricTimestamp) {
+            upperBound = midPoint - 1;
+        } else {
+            lowerBound = midPoint + 1;
+        }
+
+    }
+
+    return midPoint;
+
+}
+
 // GET BLOCK TRANSACTIONS BY BLOCK NUMBER and ADDRESS
 app.get('/block/:blockNumber/transactions/:address/network/:network', async (req, res) => {
+
+    let { blockNumber, address, network } = req.params;
+
+    const provider = new ethers.getDefaultProvider(
+        network, {
+        infura: process.env.INFURA_KEY,
+        alchemy: process.env.ALCHEMY_KEY,
+        etherscan: process.env.ETHERSCAN_KEY,
+        pocket: process.env.POCKET_KEY
+    });
+
+    const etherscanProvider = new ethers.providers.EtherscanProvider(network, process.env.ETHERSCAN_KEY);
+
     try {
+        let currentBlockNumber = await provider.getBlockNumber();
+        let balanceAtTimestamp = 0;
+        if (req.query.timestamp) {
+            let historicTimestamp = req.query.timestamp;
+            blockAtTimestamp = await getHistoricBalance(address, historicTimestamp, provider);
+            console.log({ balanceAtTimestamp });
+            let historicBalance = await provider.getBalance(address, midPoint);
+        }
 
-        let { blockNumber, address, network } = req.params;
 
-        const etherscanProvider = new ethers.providers.EtherscanProvider(network, process.env.ETHERSCAN_KEY);
 
         let balance = await provider.getBalance(address);
         let balanceInETH = balance.toString() / 10 ** 18;
 
-        let currentBlockNumber = await provider.getBlockNumber();
         let blocktransactions = await etherscanProvider.getHistory(address, parseInt(blockNumber));
 
         if (!blocktransactions) {
@@ -83,7 +126,7 @@ app.get('/block/:blockNumber/transactions/:address/network/:network', async (req
         res.status(200).json({
             status: 'success',
             message: 'block transactions request successful',
-            body: { blocktransactions, balanceInETH, currentBlockNumber }
+            body: { blocktransactions, balanceInETH, currentBlockNumber, balanceAtTimestamp }
         })
     } catch (error) {
         console.error(error);
